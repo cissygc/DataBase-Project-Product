@@ -1,0 +1,12 @@
+{
+  "name": "db-project-ui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Stadium management UI backed by PostgreSQL",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "pg": "^8.13.1"
+  }
+}

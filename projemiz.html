@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stadium Management UI Demo</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --card: #ffffff;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #2563eb;
+      --accent-2: #0ea5e9;
+      --danger: #dc2626;
+      --success: #16a34a;
+      --warning: #f59e0b;
+      --border: #dbeafe;
+      --shadow: 0 16px 40px rgba(2, 6, 23, 0.18);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+      background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 35%, #f8fafc 100%);
+      color: #0f172a;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, #0f172a 0%, #111827 100%);
+      color: var(--text);
+      padding: 28px 20px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+    }
+
+    .brand {
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .brand h1 {
+      font-size: 1.2rem;
+      margin: 0 0 6px;
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    .nav {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .nav button {
+      width: 100%;
+      background: rgba(255,255,255,0.05);
+      color: var(--text);
+      border: 1px solid rgba(255,255,255,0.08);
+      text-align: left;
+      padding: 14px 16px;
+      border-radius: 14px;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-size: 0.97rem;
+    }
+
+    .nav button:hover,
+    .nav button.active {
+      background: linear-gradient(90deg, rgba(37,99,235,0.25), rgba(14,165,233,0.18));
+      border-color: rgba(96,165,250,0.45);
+    }
+
+    .sidebar .note {
+      margin-top: 26px;
+      padding: 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+    }
+
+    main {
+      padding: 30px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: 1.8rem;
+    }
+
+    .sub {
+      color: #475569;
+      margin-top: 6px;
+      line-height: 1.45;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: flex-end;
+    }
+
+    .pill {
+      background: white;
+      border: 1px solid #dbeafe;
+      border-radius: 999px;
+      padding: 10px 14px;
+      box-shadow: var(--shadow);
+      font-size: 0.9rem;
+    }
+
+    .screen {
+      display: none;
+      animation: fade 0.25s ease;
+    }
+
+    .screen.active { display: block; }
+
+    @keyframes fade {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      border: 1px solid rgba(219, 234, 254, 0.9);
+    }
+
+    .span-4 { grid-column: span 4; }
+    .span-5 { grid-column: span 5; }
+    .span-6 { grid-column: span 6; }
+    .span-7 { grid-column: span 7; }
+    .span-8 { grid-column: span 8; }
+    .span-12 { grid-column: span 12; }
+
+    .card h3 {
+      margin: 0 0 14px;
+      font-size: 1.08rem;
+    }
+
+    .meta {
+      color: #64748b;
+      font-size: 0.92rem;
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.94rem;
+    }
+
+    th, td {
+      padding: 11px 10px;
+      text-align: left;
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+    }
+
+    th {
+      color: #334155;
+      font-weight: 700;
+      background: #f8fafc;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 0.82rem;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-weight: 600;
+    }
+
+    .tag.success { background: #dcfce7; color: #166534; }
+    .tag.warn { background: #fef3c7; color: #92400e; }
+    .tag.danger { background: #fee2e2; color: #991b1b; }
+
+    label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: #334155;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px 12px;
+      border: 1px solid #cbd5e1;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      margin-bottom: 14px;
+      background: white;
+    }
+
+    .row-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    .row-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+    }
+
+    .btn {
+      border: none;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      color: white;
+      padding: 12px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+
+    .btn.secondary {
+      background: #e2e8f0;
+      color: #0f172a;
+    }
+
+    .btn.danger {
+      background: linear-gradient(90deg, #dc2626, #ef4444);
+    }
+
+    .message {
+      margin-top: 12px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-size: 0.92rem;
+      display: none;
+    }
+
+    .message.show { display: block; }
+    .message.success { background: #dcfce7; color: #166534; }
+    .message.info { background: #e0f2fe; color: #075985; }
+    .message.warn { background: #fef3c7; color: #92400e; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .stat {
+      background: white;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+      border: 1px solid #dbeafe;
+    }
+
+    .stat small {
+      display: block;
+      color: #64748b;
+      margin-bottom: 6px;
+    }
+
+    .stat strong {
+      font-size: 1.45rem;
+    }
+
+    .warning-box {
+      padding: 16px;
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      border-radius: 14px;
+      color: #9a3412;
+      line-height: 1.5;
+      margin-bottom: 14px;
+    }
+
+    .footer-note {
+      margin-top: 24px;
+      color: #64748b;
+      font-size: 0.9rem;
+    }
+
+    @media (max-width: 1100px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { height: auto; position: static; }
+      .stats { grid-template-columns: repeat(2, 1fr); }
+      .span-4, .span-5, .span-6, .span-7, .span-8, .span-12 { grid-column: span 12; }
+    }
+
+    @media (max-width: 720px) {
+      main { padding: 18px; }
+      .row-2, .row-3, .stats { grid-template-columns: 1fr; }
+      .topbar { flex-direction: column; align-items: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>Stadium Management</h1>
+        <p>UI showcase for the extended customer requirements and presentation screenshots.</p>
+      </div>
+
+      <div class="nav">
+        <button class="active" data-screen="artists">1. Artists at Concerts</button>
+        <button data-screen="sales">2. Employee Ticket Sales</button>
+        <button data-screen="seat">3. Change Seat Location</button>
+        <button data-screen="reservation">4. Add Ticket Reservation</button>
+        <button data-screen="delete">5. Remove Concert</button>
+      </div>
+
+      <div class="note">
+        This demo includes the new business rules:<br><br>
+        • one payment can cover multiple tickets<br>
+        • one concert can include multiple artists, including opening acts
+      </div>
+    </aside>
+
+    <main>
+      <div class="topbar">
+        <div>
+          <h2>Stadium Management UI Demo</h2>
+          <div class="sub">Simple presentation-ready interface screens for the required user operations.</div>
+        </div>
+        <div class="pill-row">
+          <div class="pill">Single Stadium</div>
+          <div class="pill">Concert + Football Events</div>
+          <div class="pill">Presentation Mockup</div>
+        </div>
+      </div>
+
+      <div class="stats">
+        <div class="stat"><small>Total Events</small><strong id="statEvents">6</strong></div>
+        <div class="stat"><small>Total Concert Artists</small><strong id="statArtists">8</strong></div>
+        <div class="stat"><small>Open Reservations</small><strong id="statReservations">4</strong></div>
+        <div class="stat"><small>Grouped Payments</small><strong id="statPayments">2</strong></div>
+      </div>
+
+      <section id="artists" class="screen active">
+        <div class="grid">
+          <div class="card span-4">
+            <h3>Select Concert</h3>
+            <div class="meta">List all artists who have performed at the selected concert, including opening acts.</div>
+            <label for="concertSelect">Concert Event</label>
+            <select id="concertSelect"></select>
+            <button class="btn" id="loadArtistsBtn">Load Artists</button>
+            <div class="message info show" id="artistInfo">Choose a concert to view all related artists.</div>
+          </div>
+
+          <div class="card span-8">
+            <h3>Artists Performing at Concert</h3>
+            <div class="meta">Supports multiple artists for a single concert.</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Artist ID</th>
+                  <th>Artist Name</th>
+                  <th>Performance Role</th>
+                  <th>Genre</th>
+                </tr>
+              </thead>
+              <tbody id="artistTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="sales" class="screen">
+        <div class="grid">
+          <div class="card span-12">
+            <h3>Employees and Tickets Sold Per Event</h3>
+            <div class="meta">A reporting screen for showing employees and how many tickets they sold for each event.</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Employee ID</th>
+                  <th>Employee Name</th>
+                  <th>Event</th>
+                  <th>Event Type</th>
+                  <th>Tickets Sold</th>
+                </tr>
+              </thead>
+              <tbody id="salesTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="seat" class="screen">
+        <div class="grid">
+          <div class="card span-5">
+            <h3>Change Seat Location</h3>
+            <div class="meta">Update the section, row, and seat number for an existing ticket.</div>
+            <label for="ticketSelect">Ticket</label>
+            <select id="ticketSelect"></select>
+
+            <div class="row-3">
+              <div>
+                <label for="newSection">New Section</label>
+                <input id="newSection" placeholder="e.g. B" />
+              </div>
+              <div>
+                <label for="newRow">New Row</label>
+                <input id="newRow" placeholder="e.g. 4" />
+              </div>
+              <div>
+                <label for="newSeat">New Seat</label>
+                <input id="newSeat" placeholder="e.g. 18" />
+              </div>
+            </div>
+
+            <button class="btn" id="updateSeatBtn">Update Seat</button>
+            <div class="message success" id="seatMsg"></div>
+          </div>
+
+          <div class="card span-7">
+            <h3>Current Ticket Details</h3>
+            <div class="meta">Preview before changing the assigned seat.</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Ticket ID</th>
+                  <th>Customer</th>
+                  <th>Event</th>
+                  <th>Current Seat</th>
+                </tr>
+              </thead>
+              <tbody id="ticketDetailsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="reservation" class="screen">
+        <div class="grid">
+          <div class="card span-6">
+            <h3>Add New Ticket Reservation</h3>
+            <div class="meta">Demonstrates a new reservation and the new rule that one payment can cover multiple tickets.</div>
+            <label for="customerInput">Customer Name</label>
+            <input id="customerInput" placeholder="Enter customer name" value="Elif Aydın" />
+
+            <label for="reservationEvent">Event</label>
+            <select id="reservationEvent"></select>
+
+            <div class="row-2">
+              <div>
+                <label for="ticketQty">Ticket Quantity</label>
+                <input id="ticketQty" type="number" min="1" value="2" />
+              </div>
+              <div>
+                <label for="paymentMethod">Payment Method</label>
+                <select id="paymentMethod">
+                  <option>Credit Card</option>
+                  <option>Debit Card</option>
+                  <option>Cash</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="row-3">
+              <div>
+                <label for="reservationSection">Section</label>
+                <input id="reservationSection" value="Floor" />
+              </div>
+              <div>
+                <label for="reservationRow">Row</label>
+                <input id="reservationRow" value="GA" />
+              </div>
+              <div>
+                <label for="reservationSeat">Starting Seat</label>
+                <input id="reservationSeat" value="Standing" />
+              </div>
+            </div>
+
+            <button class="btn" id="addReservationBtn">Create Reservation</button>
+            <div class="message success" id="reservationMsg"></div>
+          </div>
+
+          <div class="card span-6">
+            <h3>Reservation Summary</h3>
+            <div class="meta">A single payment record may include multiple tickets in this updated design.</div>
+            <table>
+              <tbody>
+                <tr><th>Payment ID</th><td id="summaryPayment">P-4008</td></tr>
+                <tr><th>Customer</th><td id="summaryCustomer">Elif Aydın</td></tr>
+                <tr><th>Event</th><td id="summaryEvent">Summer Beats Festival</td></tr>
+                <tr><th>Number of Tickets</th><td id="summaryQty">2</td></tr>
+                <tr><th>Payment Method</th><td id="summaryMethod">Credit Card</td></tr>
+                <tr><th>Total Amount</th><td id="summaryAmount">₺4,800</td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="card span-12">
+            <h3>Recent Reservations</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Reservation ID</th>
+                  <th>Customer</th>
+                  <th>Event</th>
+                  <th>Tickets</th>
+                  <th>Payment ID</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="reservationTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section id="delete" class="screen">
+        <div class="grid">
+          <div class="card span-5">
+            <h3>Remove Concert</h3>
+            <div class="warning-box">
+              Deleting a concert will also remove all associated tickets and reservations related to that concert.
+            </div>
+            <label for="deleteConcertSelect">Select Concert</label>
+            <select id="deleteConcertSelect"></select>
+            <button class="btn danger" id="deleteConcertBtn">Delete Concert and Associated Tickets</button>
+            <div class="message warn" id="deleteMsg"></div>
+          </div>
+
+          <div class="card span-7">
+            <h3>Concerts Currently in System</h3>
+            <div class="meta">This table updates after deletion for screenshot-ready demonstration.</div>
+            <table>
+              <thead>
+                <tr>
+                  <th>Concert ID</th>
+                  <th>Concert Name</th>
+                  <th>Date</th>
+                  <th>Associated Tickets</th>
+                </tr>
+              </thead>
+              <tbody id="concertDeleteTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <div class="footer-note">Prepared as a presentation demo for the customer-requested user interface features.</div>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      concerts: [],
+      sales: [],
+      tickets: [],
+      reservations: []
+    };
+
+    const navButtons = document.querySelectorAll('.nav button');
+    const screens = document.querySelectorAll('.screen');
+
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        navButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const target = btn.dataset.screen;
+        screens.forEach(screen => screen.classList.toggle('active', screen.id === target));
+      });
+    });
+
+    const concertSelect = document.getElementById('concertSelect');
+    const deleteConcertSelect = document.getElementById('deleteConcertSelect');
+    const reservationEvent = document.getElementById('reservationEvent');
+    const artistTableBody = document.getElementById('artistTableBody');
+    const concertDeleteTableBody = document.getElementById('concertDeleteTableBody');
+    const artistInfo = document.getElementById('artistInfo');
+    const ticketSelect = document.getElementById('ticketSelect');
+    const ticketDetailsBody = document.getElementById('ticketDetailsBody');
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.error || 'Request failed.');
+      }
+      return data;
+    }
+
+    function selectedText(select) {
+      const option = select.options[select.selectedIndex];
+      return option ? option.textContent.split(' (')[0] : '—';
+    }
+
+    function fillConcertOptions() {
+      [concertSelect, deleteConcertSelect, reservationEvent].forEach(select => {
+        select.innerHTML = '';
+      });
+
+      state.concerts.forEach((concert, index) => {
+        const text = `${concert.name} (${concert.id})`;
+        [concertSelect, deleteConcertSelect, reservationEvent].forEach(select => {
+          const option = document.createElement('option');
+          option.value = concert.id;
+          option.textContent = text;
+          select.appendChild(option);
+        });
+        if (index === 0) {
+          concertSelect.value = concert.id;
+          deleteConcertSelect.value = concert.id;
+          reservationEvent.value = concert.id;
+        }
+      });
+    }
+
+    function fillTickets() {
+      ticketSelect.innerHTML = '';
+      state.tickets.forEach(ticket => {
+        const option = document.createElement('option');
+        option.value = ticket.id;
+        option.textContent = `${ticket.id} - ${ticket.event}`;
+        ticketSelect.appendChild(option);
+      });
+    }
+
+    function updateStats(stats) {
+      document.getElementById('statEvents').textContent = stats.total_events ?? 0;
+      document.getElementById('statArtists').textContent = stats.total_concert_artists ?? 0;
+      document.getElementById('statReservations').textContent = stats.open_reservations ?? 0;
+      document.getElementById('statPayments').textContent = stats.grouped_payments ?? 0;
+    }
+
+    async function renderArtists() {
+      const selected = state.concerts.find(c => c.id === concertSelect.value) || state.concerts[0];
+      artistTableBody.innerHTML = '';
+
+      if (!selected) {
+        artistTableBody.innerHTML = '<tr><td colspan="4">No concert data found.</td></tr>';
+        artistInfo.textContent = 'No concert selected.';
+        return;
+      }
+
+      const artists = await api(`/api/concerts/${selected.id}/artists`);
+      artists.forEach(artist => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${artist.id}</td>
+          <td>${artist.name}</td>
+          <td><span class="tag">${artist.role}</span></td>
+          <td>${artist.genre}</td>
+        `;
+        artistTableBody.appendChild(tr);
+      });
+
+      artistInfo.textContent = `${selected.name} includes ${artists.length} artist(s).`;
+    }
+
+    function renderSales() {
+      const body = document.getElementById('salesTableBody');
+      body.innerHTML = '';
+      state.sales.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.id}</td>
+          <td>${item.name}</td>
+          <td>${item.event}</td>
+          <td><span class="tag ${item.type === 'Concert' ? 'warn' : 'success'}">${item.type}</span></td>
+          <td>${item.sold}</td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function renderTicketDetails() {
+      const ticket = state.tickets.find(t => t.id === ticketSelect.value) || state.tickets[0];
+      if (!ticket) {
+        ticketDetailsBody.innerHTML = '<tr><td colspan="4">No ticket data found.</td></tr>';
+        return;
+      }
+
+      ticketDetailsBody.innerHTML = `
+        <tr>
+          <td>${ticket.id}</td>
+          <td>${ticket.customer}</td>
+          <td>${ticket.event}</td>
+          <td>${ticket.section || '—'}-${ticket.row || '—'}-${ticket.seat || '—'}</td>
+        </tr>
+      `;
+
+      document.getElementById('newSection').value = ticket.section || '';
+      document.getElementById('newRow').value = ticket.row || '';
+      document.getElementById('newSeat').value = ticket.seat || '';
+    }
+
+    function renderReservations() {
+      const body = document.getElementById('reservationTableBody');
+      body.innerHTML = '';
+      state.reservations.forEach(item => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${item.id}</td>
+          <td>${item.customer}</td>
+          <td>${item.event}</td>
+          <td>${item.tickets}</td>
+          <td>${item.paymentId}</td>
+          <td><span class="tag ${item.status === 'Confirmed' ? 'success' : 'warn'}">${item.status}</span></td>
+        `;
+        body.appendChild(tr);
+      });
+    }
+
+    function renderConcertDeleteTable() {
+      concertDeleteTableBody.innerHTML = '';
+      state.concerts.forEach(concert => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${concert.id}</td>
+          <td>${concert.name}</td>
+          <td>${concert.date}</td>
+          <td>${concert.ticketCount}</td>
+        `;
+        concertDeleteTableBody.appendChild(tr);
+      });
+    }
+
+    async function loadBootstrap() {
+      const bootstrap = await api('/api/bootstrap');
+      state.concerts = bootstrap.concerts;
+      state.sales = bootstrap.sales;
+      state.tickets = bootstrap.tickets;
+      state.reservations = bootstrap.reservations;
+      updateStats(bootstrap.stats);
+      fillConcertOptions();
+      fillTickets();
+      renderSales();
+      renderTicketDetails();
+      renderReservations();
+      renderConcertDeleteTable();
+      document.getElementById('summaryEvent').textContent = selectedText(reservationEvent);
+      await renderArtists();
+    }
+
+    async function handleAction(action) {
+      try {
+        await action();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    document.getElementById('loadArtistsBtn').addEventListener('click', () => handleAction(renderArtists));
+    concertSelect.addEventListener('change', () => handleAction(renderArtists));
+    ticketSelect.addEventListener('change', renderTicketDetails);
+
+    document.getElementById('updateSeatBtn').addEventListener('click', () => handleAction(async () => {
+      const ticket = state.tickets.find(t => t.id === ticketSelect.value);
+      if (!ticket) {
+        return;
+      }
+
+      const section = document.getElementById('newSection').value || ticket.section;
+      const row = document.getElementById('newRow').value || ticket.row;
+      const seat = document.getElementById('newSeat').value || ticket.seat;
+
+      await api(`/api/tickets/${ticket.id}/seat`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          sectionName: section,
+          rowNumber: row,
+          seatNumber: Number(seat)
+        })
+      });
+
+      ticket.section = section;
+      ticket.row = row;
+      ticket.seat = seat;
+      renderTicketDetails();
+      const msg = document.getElementById('seatMsg');
+      msg.textContent = `Ticket ${ticket.id} seat updated to ${section}-${row}-${seat}.`;
+      msg.classList.add('show');
+    }));
+
+    reservationEvent.addEventListener('change', () => {
+      document.getElementById('summaryEvent').textContent = selectedText(reservationEvent);
+    });
+
+    document.getElementById('ticketQty').addEventListener('input', e => {
+      const qty = Math.max(1, Number(e.target.value || 1));
+      document.getElementById('summaryQty').textContent = qty;
+      document.getElementById('summaryAmount').textContent = `₺${(qty * 2400).toLocaleString('tr-TR')}`;
+    });
+
+    document.getElementById('paymentMethod').addEventListener('change', e => {
+      document.getElementById('summaryMethod').textContent = e.target.value;
+    });
+
+    document.getElementById('customerInput').addEventListener('input', e => {
+      document.getElementById('summaryCustomer').textContent = e.target.value || '—';
+    });
+
+    document.getElementById('addReservationBtn').addEventListener('click', () => handleAction(async () => {
+      const customer = document.getElementById('customerInput').value || 'Unknown Customer';
+      const qty = Math.max(1, Number(document.getElementById('ticketQty').value || 1));
+      const paymentMethod = document.getElementById('paymentMethod').value;
+
+      const payload = await api('/api/reservations', {
+        method: 'POST',
+        body: JSON.stringify({
+          customerName: customer,
+          eventId: reservationEvent.value,
+          ticketQty: qty,
+          paymentMethod,
+          sectionName: document.getElementById('reservationSection').value,
+          rowNumber: document.getElementById('reservationRow').value,
+          startingSeat: document.getElementById('reservationSeat').value
+        })
+      });
+
+      document.getElementById('summaryPayment').textContent = payload.paymentId;
+      document.getElementById('summaryCustomer').textContent = payload.customer;
+      document.getElementById('summaryEvent').textContent = payload.event;
+      document.getElementById('summaryQty').textContent = payload.tickets;
+      document.getElementById('summaryMethod').textContent = paymentMethod;
+      document.getElementById('summaryAmount').textContent = `₺${(qty * 2400).toLocaleString('tr-TR')}`;
+
+      await loadBootstrap();
+
+      const msg = document.getElementById('reservationMsg');
+      msg.textContent = `Reservation ${payload.reservationId} created. One payment (${payload.paymentId}) covers ${payload.tickets} ticket(s).`;
+      msg.classList.add('show');
+    }));
+
+    document.getElementById('deleteConcertBtn').addEventListener('click', () => handleAction(async () => {
+      const removed = await api(`/api/concerts/${deleteConcertSelect.value}`, {
+        method: 'DELETE'
+      });
+      await loadBootstrap();
+      const msg = document.getElementById('deleteMsg');
+      msg.textContent = `${removed.deletedEventName} was removed along with its associated tickets.`;
+      msg.classList.add('show');
+    }));
+
+    handleAction(loadBootstrap);
+  </script>
+</body>
+</html>
